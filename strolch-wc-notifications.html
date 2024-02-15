@@ -1,0 +1,76 @@
+<!-- Components -->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../strolch-wc-styles/strolch-wc-styles.html">
+<link rel="import" href="../strolch-wc-util-behavior/strolch-wc-component-behavior.html">
+
+<link rel="import" href="../strolch-wc-styles/strolch-wc-styles.html">
+
+<dom-module id="strolch-wc-notifications">
+    <template>
+        <!-- Style -->
+        <style is="custom-style" include="strolch-wc-styles">
+            :host {
+
+            }
+
+            .content {
+                display: flex;
+                flex-direction: column;
+            }
+        </style>
+
+        <!-- Content -->
+        <div id="content" class="content">
+            <h1>Notifications!</h1>
+        </div>
+
+        <!-- ajax request -->
+        <iron-ajax id="ajaxGetNotifications" url="[[baseRestPath]]/strolch/notifications"
+                   content-type="application/json" handle-as="json" method="GET"
+                   on-response="onGetNotificationsResponse" on-error="onAjaxError"
+                   loading="{{loadingGetReports}}"></iron-ajax>
+
+    </template>
+
+    <script>
+        Polymer({
+            <!-- Settings -->
+            is: "strolch-wc-notifications",
+
+            <!-- Behaviors -->
+            behaviors: [
+                StrolchComponentBehavior
+            ],
+
+            <!-- Properties -->
+            properties: {
+                toolbarConfig: {
+                    type: Object,
+                    value: {
+                        pageTitle: "notifications",
+                        backButton: true,
+                        searchInput: false,
+                        lockLocation: false
+                    },
+                    notify: true,
+                    readOnly: true
+                },
+            },
+
+            <!-- Functions -->
+            reload : function () {
+                this.$.ajaxGetNotifications.generateRequest();
+            },
+
+            ready: function () {
+
+            },
+
+            onGetNotificationsResponse: function () {
+
+            }
+
+        });
+    </script>
+</dom-module>
