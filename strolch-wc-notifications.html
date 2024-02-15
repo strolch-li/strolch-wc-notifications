@@ -1,15 +1,14 @@
 <!-- Components -->
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
-<link rel="import" href="../strolch-wc-styles/strolch-wc-styles.html">
+<link rel="import" href="../strolch-wc-styles/strolch-wc-app-style.html">
 <link rel="import" href="../strolch-wc-util-behavior/strolch-wc-component-behavior.html">
-
-<link rel="import" href="../strolch-wc-styles/strolch-wc-styles.html">
+<link rel="import" href="../strolch-wc-raw-text/strolch-wc-raw-text.html">
 
 <dom-module id="strolch-wc-notifications">
     <template>
         <!-- Style -->
-        <style is="custom-style" include="strolch-wc-styles">
+        <style is="custom-style" include="strolch-wc-app-style">
             :host {
 
             }
@@ -18,11 +17,39 @@
                 display: flex;
                 flex-direction: column;
             }
+
+            textarea {
+                padding: 8px;
+                margin: 8px;
+                width: calc(100% - 32px);
+                min-height: 200px;
+            }
+
+            paper-card {
+                padding: 8px;
+            }
         </style>
 
         <!-- Content -->
+        <div class="actions padding actions-right">
+            <div>
+                <paper-button on-tap="addNotification" raised>
+                    [[localize('add')]]
+                </paper-button>
+                <paper-icon-button on-tap="refresh" icon="refresh"></paper-icon-button>
+            </div>
+        </div>
         <div id="content" class="content">
-            <h1>Notifications!</h1>
+            <template is="dom-repeat" items="[[notifications]]" as="notification">
+                <paper-card raised="1">
+                    <h3>[[notification.title]]</h3>
+                    <strolch-wc-raw-text text="[[notification.text]]"></strolch-wc-raw-text>
+<!--                    <textarea class="form-control" readonly type="text" value="{{notification.text::input}}"></textarea>-->
+<!--                    <paper-textarea value="[[notification.text]]"></paper-textarea>-->
+                    <p>[[localize('validFrom')]]: [[formatDateTimeDashIfEmpty(notification.visibleFrom)]]</p>
+                    <p>[[localize('validTo')]]: [[formatDateTimeDashIfEmpty(notification.visibleTo)]]</p>
+                </paper-card>
+            </template>
         </div>
 
         <!-- ajax request -->
@@ -56,10 +83,16 @@
                     notify: true,
                     readOnly: true
                 },
+                notifications: {
+                    type: Array
+                }
             },
 
             <!-- Functions -->
-            reload : function () {
+            reload: function () {
+                this.refresh();
+            },
+            refresh: function () {
                 this.$.ajaxGetNotifications.generateRequest();
             },
 
@@ -67,8 +100,8 @@
 
             },
 
-            onGetNotificationsResponse: function () {
-
+            onGetNotificationsResponse: function (e) {
+                this.notifications = e.detail.response.data;
             }
 
         });
