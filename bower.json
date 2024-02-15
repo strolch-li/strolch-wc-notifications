@@ -1,7 +1,7 @@
 {
   "name": "strolch-wc-notifications",
   "description": "Strolch WebComponent Notifications",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "authors": [
     "Robert von Burg"
   ],
@@ -20,7 +20,7 @@
   "ignore": [],
   "dependencies": {
     "polymer": "Polymer/polymer#^1.12.0",
-    "strolch-wc-raw-text": "strolch-li/strolch-wc-raw-text#^0.1.",
+    "strolch-wc-raw-text": "strolch-li/strolch-wc-raw-text#^0.1.0",
 
     "atx-wc-app-styling": "git@github.com:atexxi/atx-wc-app-styling#^0.3.7",
 
