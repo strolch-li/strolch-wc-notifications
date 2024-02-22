@@ -1,0 +1,68 @@
+<!-- Components -->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../strolch-wc-styles/strolch-wc-app-style.html">
+<link rel="import" href="../strolch-wc-util-behavior/strolch-wc-component-behavior.html">
+<link rel="import" href="../strolch-wc-raw-text/strolch-wc-raw-text.html">
+
+<link rel="import" href="./strolch-wc-notification.html">
+
+<dom-module id="strolch-wc-notification-detail">
+    <template>
+        <!-- Style -->
+        <style is="custom-style" include="strolch-wc-app-style">
+            :host {
+
+            }
+
+            paper-dialog {
+                width: 600px;
+            }
+
+        </style>
+
+        <!-- Content -->
+        <paper-dialog id="dlg" modal on-iron-overlay-closed="close">
+            <iron-a11y-keys keys="esc" on-keys-pressed="close"></iron-a11y-keys>
+            <h2>[[notification.title]]</h2>
+            <strolch-wc-raw-text text="[[notification.text]]"></strolch-wc-raw-text>
+            <div class="buttons">
+                <paper-button dialog-confirm autofocus>[[localize('close')]]</paper-button>
+            </div>
+        </paper-dialog>
+
+    </template>
+
+    <script>
+        Polymer({
+            <!-- Settings -->
+            is: "strolch-wc-notification-detail",
+
+            <!-- Behaviors -->
+            behaviors: [
+                StrolchComponentBehavior
+            ],
+
+            <!-- Properties -->
+            properties: {
+                notification: {
+                    type: Object
+                }
+            },
+
+            <!-- Functions -->
+
+            open: function (notification) {
+                this.notification = notification;
+                this.$.dlg.open();
+            },
+
+            close: function () {
+                this.$.dlg.close();
+            },
+
+
+        });
+    </script>
+</dom-module>

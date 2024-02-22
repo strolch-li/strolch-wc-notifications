@@ -5,6 +5,9 @@
 <link rel="import" href="../strolch-wc-util-behavior/strolch-wc-component-behavior.html">
 <link rel="import" href="../strolch-wc-raw-text/strolch-wc-raw-text.html">
 
+<link rel="import" href="./strolch-wc-notification-detail.html">
+<link rel="import" href="./strolch-wc-notification.html">
+
 <dom-module id="strolch-wc-notifications">
     <template>
         <!-- Style -->
@@ -31,9 +34,15 @@
         </style>
 
         <!-- Content -->
+        <template is="dom-if" if="[[testNotification]]">
+            <strolch-wc-notification message="[[testNotification.title]]" action1="[[localize('details')]]"
+                                     callback1="[[testNotification.callback1]]"
+                                     bind="[[testNotification.bind]]"
+                                     fa-icon="[[testNotification.faIcon]]"></strolch-wc-notification>
+        </template>
         <div class="actions padding actions-right">
             <div>
-                <paper-button on-tap="addNotification" raised>
+                <paper-button on-tap="onAddNotification" raised>
                     [[localize('add')]]
                 </paper-button>
                 <paper-icon-button on-tap="refresh" icon="refresh"></paper-icon-button>
@@ -44,13 +53,34 @@
                 <paper-card raised="1">
                     <h3>[[notification.title]]</h3>
                     <strolch-wc-raw-text text="[[notification.text]]"></strolch-wc-raw-text>
-<!--                    <textarea class="form-control" readonly type="text" value="{{notification.text::input}}"></textarea>-->
-<!--                    <paper-textarea value="[[notification.text]]"></paper-textarea>-->
+                    <!--                    <textarea class="form-control" readonly type="text" value="{{notification.text::input}}"></textarea>-->
+                    <!--                    <paper-textarea value="[[notification.text]]"></paper-textarea>-->
                     <p>[[localize('validFrom')]]: [[formatDateTimeDashIfEmpty(notification.visibleFrom)]]</p>
                     <p>[[localize('validTo')]]: [[formatDateTimeDashIfEmpty(notification.visibleTo)]]</p>
+                    <div class="actions padding actions-right">
+                        <div>
+                            <paper-button on-tap="onTestNotification" raised>
+                                [[localize('test')]]
+                            </paper-button>
+                        </div>
+                    </div>
                 </paper-card>
             </template>
         </div>
+
+        <paper-dialog id="editDlg" modal on-iron-overlay-closed="close">
+            <iron-a11y-keys keys="esc" on-keys-pressed="close"></iron-a11y-keys>
+            <paper-input label="[[localize('title')]]" value="{{editNotification.title}}"></paper-input>
+            <paper-textarea label="[[localize('text')]]" placeholder="[[localize('textWithSimpleHtmlTagsAllowed')]]" value="{{notification.text}}"></paper-textarea>
+
+            <div class="buttons">
+                <paper-button dialog-confirm autofocus>[[localize('close')]]</paper-button>
+            </div>
+        </paper-dialog>
+
+        <strolch-wc-notification-detail id="detailDlg" base-path="../"
+                                        base-rest-path="[[baseRestPath]]"
+                                        locales-path="[[localesPath]]"></strolch-wc-notification-detail>
 
         <!-- ajax request -->
         <iron-ajax id="ajaxGetNotifications" url="[[baseRestPath]]/strolch/notifications"
@@ -85,6 +115,9 @@
                 },
                 notifications: {
                     type: Array
+                },
+                testNotification: {
+                    type: Object
                 }
             },
 
@@ -94,6 +127,23 @@
             },
             refresh: function () {
                 this.$.ajaxGetNotifications.generateRequest();
+            },
+
+            onAddNotification: function (e) {
+
+            },
+            onTestNotification: function (e) {
+                var notification = e.model.notification;
+                notification.callback1 = function () {
+                    this.showDetail(notification);
+                }.bind(this);
+                this.testNotification = notification;
+                this.async(function () {
+                    this.testNotification = null;
+                }, 10000);
+            },
+            showDetail: function (notification) {
+                this.$.detailDlg.open(notification);
             },
 
             ready: function () {

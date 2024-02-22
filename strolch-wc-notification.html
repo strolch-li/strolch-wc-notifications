@@ -1,0 +1,122 @@
+<!-- Components -->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../neon-animation/neon-animations.html">
+<link rel="import" href="../neon-animation/neon-animation-runner-behavior.html">
+<link rel="import" href="../neon-animation/animations/slide-from-top-animation.html">
+
+<link rel="import" href="../strolch-wc-styles/strolch-wc-styles.html">
+
+<dom-module id="strolch-wc-notification">
+    <template>
+        <!-- Style -->
+        <style is="custom-style" include="strolch-wc-styles">
+            :host {
+                display: block;
+                height: var(--app-notification-height);
+                padding: 0 32px;
+                color: white;
+                background-color: var(--paper-red-300);
+
+                @apply(--layout-horizontal);
+                @apply(--layout-center);
+            }
+
+            .button {
+                color: black;
+                background-color: white;
+            }
+
+            .message {
+                font-size: 18px;
+            }
+
+            :host > :not(:first-child) {
+                margin: 0 0 0 8px;
+            }
+
+            .mid-space {
+                display: inline-block;
+                margin-left: auto;
+            }
+        </style>
+
+        <!-- Content -->
+        <i class$="fa [[faIcon]] message" aria-hidden="true"></i> <span class="message">[[message]]</span>
+        <div class="mid-space"></div>
+        <template is="dom-if" if="[[action1]]">
+            <paper-button class="button" on-tap="onAction1Tapped">
+                [[action1]]
+            </paper-button>
+        </template>
+        <template is="dom-if" if="[[action2]]">
+            <paper-button class="button" on-tap="onAction2Tapped">
+                [[action2]]
+            </paper-button>
+        </template>
+        <template is="dom-if" if="[[action3]]">
+            <paper-button class="button" on-tap="onAction3Tapped">
+                [[action3]]
+            </paper-button>
+        </template>
+    </template>
+
+    <script>
+        Polymer({
+            <!-- Settings -->
+            is: "strolch-wc-notification",
+
+            <!-- Behaviors -->
+            behaviors: [
+                Polymer.NeonAnimationRunnerBehavior
+            ],
+
+            <!-- Properties -->
+            properties: {
+                animationConfig: {
+                    value: function () {
+                        return {
+                            node: this,
+                            name: "slide-from-top-animation",
+                            timing: {
+                                "duration": 700,
+                                "delay": 300
+                            }
+                        }
+                    }
+                },
+                faIcon: {
+                    type: String,
+                    value: "fa-exclamation-triangle"
+                },
+                message: {
+                    type: String,
+                    value: "..."
+                }
+            },
+
+            <!-- Functions -->
+            ready: function () {
+                this.playAnimation();
+            },
+            onAction1Tapped: function (event) {
+                if (this.bind != null)
+                    this.callback1.bind(this.bind)();
+                else
+                    this.callback1();
+            },
+            onAction2Tapped: function (event) {
+                if (this.bind != null)
+                    this.callback2.bind(this.bind)();
+                else
+                    this.callback2();
+            },
+            onAction3Tapped: function (event) {
+                if (this.bind != null)
+                    this.callback3.bind(this.bind)();
+                else
+                    this.callback3();
+            }
+        });
+    </script>
+</dom-module>
