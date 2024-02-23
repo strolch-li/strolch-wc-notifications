@@ -4,6 +4,8 @@
 <link rel="import" href="../strolch-wc-styles/strolch-wc-app-style.html">
 <link rel="import" href="../strolch-wc-util-behavior/strolch-wc-component-behavior.html">
 <link rel="import" href="../strolch-wc-raw-text/strolch-wc-raw-text.html">
+<link rel="import" href="../strolch-wc-date-time/strolch-wc-date-picker.html">
+<link rel="import" href="../strolch-wc-date-time/strolch-wc-editable-time-picker.html">
 
 <link rel="import" href="./strolch-wc-notification-detail.html">
 <link rel="import" href="./strolch-wc-notification.html">
@@ -30,6 +32,21 @@
 
             paper-card {
                 padding: 8px;
+            }
+
+            textarea {
+                width: calc(100% - 96px);
+                margin: 0 24px;
+            }
+
+            div.visibility {
+                margin-top: 0;
+            }
+            p.visibility {
+                margin-top: 0;
+            }
+            .inline-blk {
+                display: inline-block;
             }
         </style>
 
@@ -62,6 +79,9 @@
                             <paper-button on-tap="onTestNotification" raised>
                                 [[localize('test')]]
                             </paper-button>
+                            <paper-button on-tap="onEditNotification" raised>
+                                [[localize('edit')]]
+                            </paper-button>
                         </div>
                     </div>
                 </paper-card>
@@ -71,10 +91,26 @@
         <paper-dialog id="editDlg" modal on-iron-overlay-closed="close">
             <iron-a11y-keys keys="esc" on-keys-pressed="close"></iron-a11y-keys>
             <paper-input label="[[localize('title')]]" value="{{editNotification.title}}"></paper-input>
-            <paper-textarea label="[[localize('text')]]" placeholder="[[localize('textWithSimpleHtmlTagsAllowed')]]" value="{{notification.text}}"></paper-textarea>
+            <p>[[localize('text')]]:</p>
+            <textarea rows="8">{{editNotification.text::input}}</textarea>
+            <p class="visibility">[[localize('textWithSimpleHtmlTagsAllowed')]]</p>
+
+            <div class="visibility">
+                <strolch-wc-date-picker class="inline-blk" id="startDate" label="[[localize('visibleFrom')]]"
+                                        value="{{editNotification.visibleDateFrom}}"></strolch-wc-date-picker>
+                <strolch-wc-editable-time-picker class="inline-blk" id="startTime" label="[[localize('time')]]" increments="30"
+                                                 value="{{editNotification.visibleTimeFrom}}"></strolch-wc-editable-time-picker>
+            </div>
+            <div>
+                <strolch-wc-date-picker class="inline-blk" id="endDate" label="[[localize('visibleTo')]]"
+                                        value="{{editNotification.visibleDateTo}}"></strolch-wc-date-picker>
+                <strolch-wc-editable-time-picker class="inline-blk" id="endTime" label="[[localize('time')]]" increments="30"
+                                                 value="{{editNotification.visibleTimeTo}}"></strolch-wc-editable-time-picker>
+            </div>
 
             <div class="buttons">
-                <paper-button dialog-confirm autofocus>[[localize('close')]]</paper-button>
+                <paper-button dialog-dismiss>[[localize('cancel')]]</paper-button>
+                <paper-button autofocus on-tap="onSaveNotification">[[localize('save')]]</paper-button>
             </div>
         </paper-dialog>
 
@@ -131,6 +167,18 @@
 
             onAddNotification: function (e) {
 
+            },
+            onEditNotification: function (e) {
+                var notification = JSON.parse(JSON.stringify(e.model.notification));
+                notification.visibleDateFrom = new Date(notification.visibleFrom);
+                notification.visibleDateTo = new Date(notification.visibleTo);
+                var s = notification.visibleFrom;
+                notification.visibleTimeFrom = s.substring(s.indexOf("T") + 1).substring(0, 5);
+                s = notification.visibleTo;
+                notification.visibleTimeTo = s.substring(s.indexOf("T") + 1).substring(0, 5);
+
+                this.editNotification = notification;
+                this.$.editDlg.open();
             },
             onTestNotification: function (e) {
                 var notification = e.model.notification;
