@@ -42,9 +42,11 @@
             div.visibility {
                 margin-top: 0;
             }
+
             p.visibility {
                 margin-top: 0;
             }
+
             .inline-blk {
                 display: inline-block;
             }
@@ -88,8 +90,13 @@
             </template>
         </div>
 
-        <paper-dialog id="editDlg" modal on-iron-overlay-closed="close">
-            <iron-a11y-keys keys="esc" on-keys-pressed="close"></iron-a11y-keys>
+        <paper-dialog id="editDlg" modal>
+            <div class="dialog-headline">
+                <h2>
+                    <paper-icon-button icon="icons:close" dialog-dismiss></paper-icon-button>
+                    [[localize('editNotification')]]
+                </h2>
+            </div>
             <paper-input label="[[localize('title')]]" value="{{editNotification.title}}"></paper-input>
             <p>[[localize('text')]]:</p>
             <textarea rows="8">{{editNotification.text::input}}</textarea>
@@ -98,13 +105,15 @@
             <div class="visibility">
                 <strolch-wc-date-picker class="inline-blk" id="startDate" label="[[localize('visibleFrom')]]"
                                         value="{{editNotification.visibleDateFrom}}"></strolch-wc-date-picker>
-                <strolch-wc-editable-time-picker class="inline-blk" id="startTime" label="[[localize('time')]]" increments="30"
+                <strolch-wc-editable-time-picker class="inline-blk" id="startTime" label="[[localize('time')]]"
+                                                 increments="30"
                                                  value="{{editNotification.visibleTimeFrom}}"></strolch-wc-editable-time-picker>
             </div>
             <div>
                 <strolch-wc-date-picker class="inline-blk" id="endDate" label="[[localize('visibleTo')]]"
                                         value="{{editNotification.visibleDateTo}}"></strolch-wc-date-picker>
-                <strolch-wc-editable-time-picker class="inline-blk" id="endTime" label="[[localize('time')]]" increments="30"
+                <strolch-wc-editable-time-picker class="inline-blk" id="endTime" label="[[localize('time')]]"
+                                                 increments="30"
                                                  value="{{editNotification.visibleTimeTo}}"></strolch-wc-editable-time-picker>
             </div>
 
@@ -123,6 +132,8 @@
                    content-type="application/json" handle-as="json" method="GET"
                    on-response="onGetNotificationsResponse" on-error="onAjaxError"
                    loading="{{loadingGetReports}}"></iron-ajax>
+        <iron-ajax id="ajax" content-type="application/json" handle-as="json" on-response="onAjaxResponse"
+                   on-error="onRequestError"></iron-ajax>
 
     </template>
 
@@ -193,6 +204,9 @@
             showDetail: function (notification) {
                 this.$.detailDlg.open(notification);
             },
+            closeEditDlg: function () {
+                this.$.detailDlg.close();
+            },
 
             ready: function () {
 
@@ -200,8 +214,16 @@
 
             onGetNotificationsResponse: function (e) {
                 this.notifications = e.detail.response.data;
-            }
+            },
+            onSaveNotification: function (e) {
+                var notification = this.editNotification;
 
+                this.$.ajax.url = this.baseRestPath + '/strolch/notifications/' + notification.id;
+                this.$.ajax.method = 'PUT';
+                this.$.ajax.body = notification;
+                this.$.ajax.onResponse = this.closeEditDlg;
+                this.$.ajax.generateRequest();
+            }
         });
     </script>
 </dom-module>
