@@ -97,6 +97,13 @@
                     [[localize('editNotification')]]
                 </h2>
             </div>
+
+            <paper-tabs selected="{{selectedLanguageTab}}" attr-for-selected="name" fit-container>
+                <template is="dom-repeat" items="[[supportedLanguages]]" as="language">
+                    <paper-tab name="[[language.locale]]">[[language.name]]</paper-tab>
+                </template>
+            </paper-tabs>
+
             <paper-input label="[[localize('title')]]" value="{{editNotification.title}}"></paper-input>
             <p>[[localize('text')]]:</p>
             <textarea rows="8">{{editNotification.text::input}}</textarea>
@@ -128,10 +135,12 @@
                                         locales-path="[[localesPath]]"></strolch-wc-notification-detail>
 
         <!-- ajax request -->
+        <iron-ajax id="ajaxGetSupportedLanguages" url="[[baseRestPath]]/strolch/languages/supported"
+                   content-type="application/json" handle-as="json" method="GET"
+                   on-response="onGetSupportedLanguagesResponse" on-error="onAjaxError"></iron-ajax>
         <iron-ajax id="ajaxGetNotifications" url="[[baseRestPath]]/strolch/notifications"
                    content-type="application/json" handle-as="json" method="GET"
-                   on-response="onGetNotificationsResponse" on-error="onAjaxError"
-                   loading="{{loadingGetReports}}"></iron-ajax>
+                   on-response="onGetNotificationsResponse" on-error="onAjaxError"></iron-ajax>
         <iron-ajax id="ajax" content-type="application/json" handle-as="json" on-response="onAjaxResponse"
                    on-error="onRequestError"></iron-ajax>
 
@@ -160,6 +169,12 @@
                     notify: true,
                     readOnly: true
                 },
+                selectedLanguageTab: {
+                    type: String
+                },
+                supportedLanguages: {
+                    type: Array
+                },
                 notifications: {
                     type: Array
                 },
@@ -173,6 +188,7 @@
                 this.refresh();
             },
             refresh: function () {
+                this.$.ajaxGetSupportedLanguages.generateRequest();
                 this.$.ajaxGetNotifications.generateRequest();
             },
 
@@ -214,6 +230,10 @@
 
             onGetNotificationsResponse: function (e) {
                 this.notifications = e.detail.response.data;
+            },
+            onGetSupportedLanguagesResponse: function (e) {
+                this.supportedLanguages = e.detail.response;
+                this.selectedLanguageTab = this.supportedLanguages[0].locale;
             },
             onSaveNotification: function (e) {
                 var notification = this.editNotification;
