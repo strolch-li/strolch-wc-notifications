@@ -1,0 +1,146 @@
+<!-- Components -->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-tabs/paper-tabs.html">
+<link rel="import" href="../paper-tabs/paper-tab.html">
+<link rel="import" href="../strolch-wc-styles/strolch-wc-app-style.html">
+<link rel="import" href="../strolch-wc-util-behavior/strolch-wc-component-behavior.html">
+<link rel="import" href="../strolch-wc-raw-text/strolch-wc-raw-text.html">
+<link rel="import" href="../strolch-wc-date-time/strolch-wc-date-picker.html">
+
+<link rel="import" href="./strolch-wc-notifications-behavior.html">
+
+<dom-module id="strolch-wc-notification-edit-dlg">
+    <template>
+        <!-- Style -->
+        <style is="custom-style" include="strolch-wc-app-style">
+            :host {
+
+            }
+
+            paper-dialog {
+                width: 600px;
+            }
+
+            div.visibility {
+                margin-top: 0;
+            }
+
+            p.visibility {
+                margin-top: 0;
+            }
+
+            .inline-blk {
+                display: inline-block;
+            }
+
+            textarea {
+                padding: 8px;
+                min-height: 200px;
+                width: calc(100% - 96px);
+                margin: 0 24px;
+            }
+
+        </style>
+
+        <!-- Content -->
+        <paper-dialog id="dlg" modal on-iron-overlay-closed="close">
+            <iron-a11y-keys keys="esc" on-keys-pressed="close"></iron-a11y-keys>
+            <div class="dialog-headline">
+                <h2>
+                    <paper-icon-button icon="icons:close" dialog-dismiss></paper-icon-button>
+                    [[localize('notification')]]
+                </h2>
+            </div>
+
+            <paper-tabs selected="{{selectedLanguageTab}}" attr-for-selected="name" fit-container>
+                <template is="dom-repeat" items="[[supportedLanguages]]" as="language">
+                    <paper-tab name="[[language.locale]]">[[language.name]]</paper-tab>
+                </template>
+            </paper-tabs>
+
+            <paper-input label="[[localize('title')]]" value="{{title}}"></paper-input>
+            <p>[[localize('text')]]:</p>
+            <textarea rows="8">{{text::input}}</textarea>
+            <p class="visibility">[[localize('textWithSimpleHtmlTagsAllowed')]]</p>
+
+            <div class="visibility">
+                <strolch-wc-date-picker class="inline-blk" id="startDate" label="[[localize('visibleFrom')]]"
+                                        value="{{visibleDateFrom}}"></strolch-wc-date-picker>
+                <strolch-wc-editable-time-picker class="inline-blk" id="startTime" label="[[localize('time')]]"
+                                                 increments="30"
+                                                 value="{{visibleTimeFrom}}"></strolch-wc-editable-time-picker>
+            </div>
+            <div>
+                <strolch-wc-date-picker class="inline-blk" id="endDate" label="[[localize('visibleTo')]]"
+                                        value="{{visibleDateTo}}"></strolch-wc-date-picker>
+                <strolch-wc-editable-time-picker class="inline-blk" id="endTime" label="[[localize('time')]]"
+                                                 increments="30"
+                                                 value="{{visibleTimeTo}}"></strolch-wc-editable-time-picker>
+            </div>
+
+            <div class="buttons">
+                <paper-button dialog-dismiss>[[localize('cancel')]]</paper-button>
+                <paper-button autofocus on-tap="onSaveNotification">[[localize('save')]]</paper-button>
+            </div>
+        </paper-dialog>
+
+    </template>
+
+    <script>
+        Polymer({
+            <!-- Settings -->
+            is: "strolch-wc-notification-edit-dlg",
+
+            <!-- Behaviors -->
+            behaviors: [
+                StrolchNotificationsBehavior
+            ],
+
+            <!-- Properties -->
+            properties: {
+                supportedLanguages: {
+                    type: Array,
+                    value: []
+                },
+                selectedLanguageTab: {
+                    type: String
+                },
+                notification: {
+                    type: Object
+                },
+                title: {
+                    type: String,
+                    value: ""
+                },
+                text: {
+                    type: String,
+                    value: ""
+                }
+            },
+
+            <!-- Functions -->
+
+            open: function (notification) {
+                this.notification = notification;
+                this.title = notification.title;
+                this.text = notification.text;
+                this.visibleDateFrom = new Date(notification.visibleFrom);
+                this.visibleDateTo = new Date(notification.visibleTo);
+                var s = notification.visibleFrom;
+                this.visibleTimeFrom = s.substring(s.indexOf("T") + 1).substring(0, 5);
+                s = notification.visibleTo;
+                this.visibleTimeTo = s.substring(s.indexOf("T") + 1).substring(0, 5);
+                this.$.dlg.open();
+            },
+
+            close: function () {
+                this.$.dlg.close();
+            },
+
+
+        });
+    </script>
+</dom-module>

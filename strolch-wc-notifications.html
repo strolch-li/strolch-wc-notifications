@@ -7,6 +7,8 @@
 <link rel="import" href="../strolch-wc-date-time/strolch-wc-date-picker.html">
 <link rel="import" href="../strolch-wc-date-time/strolch-wc-editable-time-picker.html">
 
+<link rel="import" href="./strolch-wc-notifications-behavior.html">
+<link rel="import" href="./strolch-wc-notification-edit-dlg.html">
 <link rel="import" href="./strolch-wc-notification-detail.html">
 <link rel="import" href="./strolch-wc-notification.html">
 
@@ -25,31 +27,16 @@
 
             textarea {
                 padding: 8px;
-                margin: 8px;
-                width: calc(100% - 32px);
                 min-height: 200px;
+                width: calc(100% - 96px);
+                margin: 0 24px;
             }
 
             paper-card {
                 padding: 8px;
             }
 
-            textarea {
-                width: calc(100% - 96px);
-                margin: 0 24px;
-            }
 
-            div.visibility {
-                margin-top: 0;
-            }
-
-            p.visibility {
-                margin-top: 0;
-            }
-
-            .inline-blk {
-                display: inline-block;
-            }
         </style>
 
         <!-- Content -->
@@ -70,66 +57,33 @@
         <div id="content" class="content">
             <template is="dom-repeat" items="[[notifications]]" as="notification">
                 <paper-card raised="1">
-                    <h3>[[notification.title]]</h3>
-                    <strolch-wc-raw-text text="[[notification.text]]"></strolch-wc-raw-text>
-                    <!--                    <textarea class="form-control" readonly type="text" value="{{notification.text::input}}"></textarea>-->
-                    <!--                    <paper-textarea value="[[notification.text]]"></paper-textarea>-->
-                    <p>[[localize('validFrom')]]: [[formatDateTimeDashIfEmpty(notification.visibleFrom)]]</p>
-                    <p>[[localize('validTo')]]: [[formatDateTimeDashIfEmpty(notification.visibleTo)]]</p>
-                    <div class="actions padding actions-right">
-                        <div>
-                            <paper-button on-tap="onTestNotification" raised>
-                                [[localize('test')]]
-                            </paper-button>
-                            <paper-button on-tap="onEditNotification" raised>
-                                [[localize('edit')]]
-                            </paper-button>
+                    <template is="dom-repeat" items="[[supportedLanguages]]" as="language">
+                        <h2>[[language.name]]</h2>
+
+                        <h3>[[notification.title]]</h3>
+                        <strolch-wc-raw-text text="[[notification.text]]"></strolch-wc-raw-text>
+                        <!--                    <textarea class="form-control" readonly type="text" value="{{notification.text::input}}"></textarea>-->
+                        <!--                    <paper-textarea value="[[notification.text]]"></paper-textarea>-->
+                        <p>[[localize('validFrom')]]: [[formatDateTimeDashIfEmpty(notification.visibleFrom)]]</p>
+                        <p>[[localize('validTo')]]: [[formatDateTimeDashIfEmpty(notification.visibleTo)]]</p>
+                        <div class="actions padding actions-right">
+                            <div>
+                                <paper-button on-tap="onTestNotification" raised>
+                                    [[localize('test')]]
+                                </paper-button>
+                                <paper-button on-tap="onEditNotification" raised>
+                                    [[localize('edit')]]
+                                </paper-button>
+                            </div>
                         </div>
-                    </div>
+                    </template>
                 </paper-card>
             </template>
         </div>
 
-        <paper-dialog id="editDlg" modal>
-            <div class="dialog-headline">
-                <h2>
-                    <paper-icon-button icon="icons:close" dialog-dismiss></paper-icon-button>
-                    [[localize('editNotification')]]
-                </h2>
-            </div>
-
-            <paper-tabs selected="{{selectedLanguageTab}}" attr-for-selected="name" fit-container>
-                <template is="dom-repeat" items="[[supportedLanguages]]" as="language">
-                    <paper-tab name="[[language.locale]]">[[language.name]]</paper-tab>
-                </template>
-            </paper-tabs>
-
-            <paper-input label="[[localize('title')]]" value="{{editNotification.title}}"></paper-input>
-            <p>[[localize('text')]]:</p>
-            <textarea rows="8">{{editNotification.text::input}}</textarea>
-            <p class="visibility">[[localize('textWithSimpleHtmlTagsAllowed')]]</p>
-
-            <div class="visibility">
-                <strolch-wc-date-picker class="inline-blk" id="startDate" label="[[localize('visibleFrom')]]"
-                                        value="{{editNotification.visibleDateFrom}}"></strolch-wc-date-picker>
-                <strolch-wc-editable-time-picker class="inline-blk" id="startTime" label="[[localize('time')]]"
-                                                 increments="30"
-                                                 value="{{editNotification.visibleTimeFrom}}"></strolch-wc-editable-time-picker>
-            </div>
-            <div>
-                <strolch-wc-date-picker class="inline-blk" id="endDate" label="[[localize('visibleTo')]]"
-                                        value="{{editNotification.visibleDateTo}}"></strolch-wc-date-picker>
-                <strolch-wc-editable-time-picker class="inline-blk" id="endTime" label="[[localize('time')]]"
-                                                 increments="30"
-                                                 value="{{editNotification.visibleTimeTo}}"></strolch-wc-editable-time-picker>
-            </div>
-
-            <div class="buttons">
-                <paper-button dialog-dismiss>[[localize('cancel')]]</paper-button>
-                <paper-button autofocus on-tap="onSaveNotification">[[localize('save')]]</paper-button>
-            </div>
-        </paper-dialog>
-
+        <strolch-wc-notification-edit-dlg id="editDlg" supported-languages="[[supportedLanguages]]" base-path="../"
+                                          base-rest-path="[[baseRestPath]]"
+                                          locales-path="[[localesPath]]"></strolch-wc-notification-edit-dlg>
         <strolch-wc-notification-detail id="detailDlg" base-path="../"
                                         base-rest-path="[[baseRestPath]]"
                                         locales-path="[[localesPath]]"></strolch-wc-notification-detail>
@@ -137,10 +91,10 @@
         <!-- ajax request -->
         <iron-ajax id="ajaxGetSupportedLanguages" url="[[baseRestPath]]/strolch/languages/supported"
                    content-type="application/json" handle-as="json" method="GET"
-                   on-response="onGetSupportedLanguagesResponse" on-error="onAjaxError"></iron-ajax>
-        <iron-ajax id="ajaxGetNotifications" url="[[baseRestPath]]/strolch/notifications"
+                   on-response="onGetSupportedLanguagesResponse" on-error="onRequestError"></iron-ajax>
+        <iron-ajax id="ajaxGetAllNotifications" url="[[baseRestPath]]/strolch/notifications/all"
                    content-type="application/json" handle-as="json" method="GET"
-                   on-response="onGetNotificationsResponse" on-error="onAjaxError"></iron-ajax>
+                   on-response="onGetAllNotificationsResponse" on-error="onRequestError"></iron-ajax>
         <iron-ajax id="ajax" content-type="application/json" handle-as="json" on-response="onAjaxResponse"
                    on-error="onRequestError"></iron-ajax>
 
@@ -153,7 +107,7 @@
 
             <!-- Behaviors -->
             behaviors: [
-                StrolchComponentBehavior
+                StrolchNotificationsBehavior
             ],
 
             <!-- Properties -->
@@ -168,9 +122,6 @@
                     },
                     notify: true,
                     readOnly: true
-                },
-                selectedLanguageTab: {
-                    type: String
                 },
                 supportedLanguages: {
                     type: Array
@@ -189,23 +140,17 @@
             },
             refresh: function () {
                 this.$.ajaxGetSupportedLanguages.generateRequest();
-                this.$.ajaxGetNotifications.generateRequest();
+                this.$.ajaxGetAllNotifications.generateRequest();
             },
 
             onAddNotification: function (e) {
 
             },
             onEditNotification: function (e) {
-                var notification = JSON.parse(JSON.stringify(e.model.notification));
-                notification.visibleDateFrom = new Date(notification.visibleFrom);
-                notification.visibleDateTo = new Date(notification.visibleTo);
-                var s = notification.visibleFrom;
-                notification.visibleTimeFrom = s.substring(s.indexOf("T") + 1).substring(0, 5);
-                s = notification.visibleTo;
-                notification.visibleTimeTo = s.substring(s.indexOf("T") + 1).substring(0, 5);
-
-                this.editNotification = notification;
-                this.$.editDlg.open();
+                this.$.editDlg.open(e.model.notification);
+            },
+            showDetail: function (notification) {
+                this.$.detailDlg.open(notification);
             },
             onTestNotification: function (e) {
                 var notification = e.model.notification;
@@ -217,18 +162,12 @@
                     this.testNotification = null;
                 }, 10000);
             },
-            showDetail: function (notification) {
-                this.$.detailDlg.open(notification);
-            },
-            closeEditDlg: function () {
-                this.$.detailDlg.close();
-            },
 
             ready: function () {
 
             },
 
-            onGetNotificationsResponse: function (e) {
+            onGetAllNotificationsResponse: function (e) {
                 this.notifications = e.detail.response.data;
             },
             onGetSupportedLanguagesResponse: function (e) {
