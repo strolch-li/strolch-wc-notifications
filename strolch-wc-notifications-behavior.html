@@ -3,6 +3,15 @@
 
         properties: {},
 
+        _getField: function (field, locale, notification) {
+            if (notification == null || notification[locale] == null || notification[locale][field == null])
+                return "-";
+            return notification[locale][field];
+        },
+        localizeBoolean: function (boolean) {
+            return boolean === true ? this.localize('true') : this.localize('false');
+        }
+
     };
 
     StrolchNotificationsBehavior = [StrolchComponentBehavior, StrolchNotificationsBehaviorImpl];

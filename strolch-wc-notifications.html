@@ -58,32 +58,42 @@
             <template is="dom-repeat" items="[[notifications]]" as="notification">
                 <paper-card raised="1">
                     <template is="dom-repeat" items="[[supportedLanguages]]" as="language">
-                        <h2>[[language.name]]</h2>
-
-                        <h3>[[notification.title]]</h3>
-                        <strolch-wc-raw-text text="[[notification.text]]"></strolch-wc-raw-text>
-                        <!--                    <textarea class="form-control" readonly type="text" value="{{notification.text::input}}"></textarea>-->
-                        <!--                    <paper-textarea value="[[notification.text]]"></paper-textarea>-->
-                        <p>[[localize('validFrom')]]: [[formatDateTimeDashIfEmpty(notification.visibleFrom)]]</p>
-                        <p>[[localize('validTo')]]: [[formatDateTimeDashIfEmpty(notification.visibleTo)]]</p>
-                        <div class="actions padding actions-right">
-                            <div>
-                                <paper-button on-tap="onTestNotification" raised>
-                                    [[localize('test')]]
-                                </paper-button>
-                                <paper-button on-tap="onEditNotification" raised>
-                                    [[localize('edit')]]
-                                </paper-button>
-                            </div>
-                        </div>
+                        <h3>[[language.name]]: [[_getField('title', language.locale, notification)]]</h3>
+                        <strolch-wc-raw-text
+                                text="[[_getField('text', language.locale, notification)]]"></strolch-wc-raw-text>
+                        <hr />
                     </template>
+
+                    <dl class="g-dl">
+                        <dt>[[localize('validFrom')]]</dt>
+                        <dd>[[formatDateTimeDashIfEmpty(notification.visibility.visibleFrom)]]</dd>
+                        <dt>[[localize('validTo')]]</dt>
+                        <dd>[[formatDateTimeDashIfEmpty(notification.visibility.visibleTo)]]</dd>
+                        <dt>[[localize('forAll')]]</dt>
+                        <dd>[[localizeBoolean(notification.visibility.forAll)]]</dd>
+                        <dt>[[localize('roles')]]</dt>
+                        <dd>[[notification.visibility.roles]]</dd>
+                        <dt>[[localize('locations')]]</dt>
+                        <dd>[[notification.visibility.locationNames]]</dd>
+                    </dl>
+
+                    <div class="actions padding actions-right">
+                        <div>
+                            <paper-button on-tap="onTestNotification" raised>
+                                [[localize('test')]]
+                            </paper-button>
+                            <paper-button on-tap="onEditNotification" raised>
+                                [[localize('edit')]]
+                            </paper-button>
+                        </div>
+                    </div>
                 </paper-card>
             </template>
         </div>
 
         <strolch-wc-notification-edit-dlg id="editDlg" supported-languages="[[supportedLanguages]]" base-path="../"
                                           base-rest-path="[[baseRestPath]]"
-                                          locales-path="[[localesPath]]"></strolch-wc-notification-edit-dlg>
+                                          locales-path="[[localesPath]]" on-save="onSaveNotification"></strolch-wc-notification-edit-dlg>
         <strolch-wc-notification-detail id="detailDlg" base-path="../"
                                         base-rest-path="[[baseRestPath]]"
                                         locales-path="[[localesPath]]"></strolch-wc-notification-detail>
@@ -95,6 +105,8 @@
         <iron-ajax id="ajaxGetAllNotifications" url="[[baseRestPath]]/strolch/notifications/all"
                    content-type="application/json" handle-as="json" method="GET"
                    on-response="onGetAllNotificationsResponse" on-error="onRequestError"></iron-ajax>
+        <iron-ajax id="ajaxGetNotification" content-type="application/json" handle-as="json" method="GET"
+                   on-response="onGetNotificationResponse" on-error="onRequestError"></iron-ajax>
         <iron-ajax id="ajax" content-type="application/json" handle-as="json" on-response="onAjaxResponse"
                    on-error="onRequestError"></iron-ajax>
 
@@ -154,6 +166,11 @@
             },
             onTestNotification: function (e) {
                 var notification = e.model.notification;
+                this.$.ajaxGetNotification.url = this.baseRestPath + "/strolch/notifications/" + notification.id;
+                this.$.ajaxGetNotification.generateRequest();
+            },
+            onGetNotificationResponse: function (e) {
+                var notification = e.detail.response.data;
                 notification.callback1 = function () {
                     this.showDetail(notification);
                 }.bind(this);
@@ -174,8 +191,9 @@
                 this.supportedLanguages = e.detail.response;
                 this.selectedLanguageTab = this.supportedLanguages[0].locale;
             },
+
             onSaveNotification: function (e) {
-                var notification = this.editNotification;
+                var notification = e.detail;
 
                 this.$.ajax.url = this.baseRestPath + '/strolch/notifications/' + notification.id;
                 this.$.ajax.method = 'PUT';

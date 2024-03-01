@@ -2,9 +2,13 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../paper-checkbox/paper-checkbox.html">
 <link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-input/paper-textarea.html">
 <link rel="import" href="../paper-tabs/paper-tabs.html">
 <link rel="import" href="../paper-tabs/paper-tab.html">
+<link rel="import" href="../paper-dialog/paper-dialog.html">
+<link rel="import" href="../paper-dialog-scrollable/paper-dialog-scrollable.html">
 <link rel="import" href="../strolch-wc-styles/strolch-wc-app-style.html">
 <link rel="import" href="../strolch-wc-util-behavior/strolch-wc-component-behavior.html">
 <link rel="import" href="../strolch-wc-raw-text/strolch-wc-raw-text.html">
@@ -24,6 +28,10 @@
                 width: 600px;
             }
 
+            .dialog-headline {
+                margin-top: 0;
+            }
+
             div.visibility {
                 margin-top: 0;
             }
@@ -36,11 +44,19 @@
                 display: inline-block;
             }
 
-            textarea {
-                padding: 8px;
-                min-height: 200px;
-                width: calc(100% - 96px);
-                margin: 0 24px;
+            paper-textarea {
+                border: 1px solid black;
+                /*margin: 0 24px;*/
+                padding: 0 8px;
+                --paper-input-container: {
+                    padding: 0;
+                };
+                --paper-input-container-underline-focus: {
+                    display: none;
+                };
+                --paper-input-container-underline: {
+                    display: none;
+                };
             }
 
         </style>
@@ -55,35 +71,51 @@
                 </h2>
             </div>
 
-            <paper-tabs selected="{{selectedLanguageTab}}" attr-for-selected="name" fit-container>
-                <template is="dom-repeat" items="[[supportedLanguages]]" as="language">
-                    <paper-tab name="[[language.locale]]">[[language.name]]</paper-tab>
+            <paper-dialog-scrollable class="dialog-content">
+
+                <paper-tabs selected="{{selectedLanguageTab}}" attr-for-selected="name" fit-container>
+                    <template is="dom-repeat" items="[[supportedLanguages]]" as="language">
+                        <paper-tab name="[[language.locale]]">[[language.name]]</paper-tab>
+                    </template>
+                </paper-tabs>
+
+                <template is="dom-if" if="[[selectedLanguageTab]]">
+                    <paper-input label="[[localize('title')]]" value="{{selectedLanguageText.title}}"></paper-input>
+                    <paper-textarea rows="8" value="{{selectedLanguageText.text}}"
+                                    label="[[localize('text')]]"></paper-textarea>
+                    <p class="visibility"><i>[[localize('textWithSimpleHtmlTagsAllowed')]]</i></p>
                 </template>
-            </paper-tabs>
 
-            <paper-input label="[[localize('title')]]" value="{{title}}"></paper-input>
-            <p>[[localize('text')]]:</p>
-            <textarea rows="8">{{text::input}}</textarea>
-            <p class="visibility">[[localize('textWithSimpleHtmlTagsAllowed')]]</p>
+                <paper-checkbox checked="{{notification.visibility.forAll}}">[[localize('forAll')]]</paper-checkbox>
+                <paper-listbox id="listBox" multi on-iron-select="onListSelect" on-iron-deselect="onListDeselect">
+                    <template is="dom-repeat" items="[[roles]]" as="role">
+                        <paper-item attr-for-selected="name">
+                            <ebx-pickingitem name="[[role]]">[[role]]</ebx-pickingitem>
+                        </paper-item>
+                    </template>
+                </paper-listbox>
 
-            <div class="visibility">
-                <strolch-wc-date-picker class="inline-blk" id="startDate" label="[[localize('visibleFrom')]]"
-                                        value="{{visibleDateFrom}}"></strolch-wc-date-picker>
-                <strolch-wc-editable-time-picker class="inline-blk" id="startTime" label="[[localize('time')]]"
-                                                 increments="30"
-                                                 value="{{visibleTimeFrom}}"></strolch-wc-editable-time-picker>
-            </div>
-            <div>
-                <strolch-wc-date-picker class="inline-blk" id="endDate" label="[[localize('visibleTo')]]"
-                                        value="{{visibleDateTo}}"></strolch-wc-date-picker>
-                <strolch-wc-editable-time-picker class="inline-blk" id="endTime" label="[[localize('time')]]"
-                                                 increments="30"
-                                                 value="{{visibleTimeTo}}"></strolch-wc-editable-time-picker>
-            </div>
+
+                <div class="visibility">
+                    <strolch-wc-date-picker class="inline-blk" id="startDate" label="[[localize('visibleFrom')]]"
+                                            value="{{visibleDateFrom}}"></strolch-wc-date-picker>
+                    <strolch-wc-editable-time-picker class="inline-blk" id="startTime" label="[[localize('time')]]"
+                                                     increments="30"
+                                                     value="{{visibleTimeFrom}}"></strolch-wc-editable-time-picker>
+                </div>
+                <div>
+                    <strolch-wc-date-picker class="inline-blk" id="endDate" label="[[localize('visibleTo')]]"
+                                            value="{{visibleDateTo}}"></strolch-wc-date-picker>
+                    <strolch-wc-editable-time-picker class="inline-blk" id="endTime" label="[[localize('time')]]"
+                                                     increments="30"
+                                                     value="{{visibleTimeTo}}"></strolch-wc-editable-time-picker>
+                </div>
+
+            </paper-dialog-scrollable>
 
             <div class="buttons">
                 <paper-button dialog-dismiss>[[localize('cancel')]]</paper-button>
-                <paper-button autofocus on-tap="onSaveNotification">[[localize('save')]]</paper-button>
+                <paper-button autofocus on-tap="onSave">[[localize('save')]]</paper-button>
             </div>
         </paper-dialog>
 
@@ -105,19 +137,45 @@
                     type: Array,
                     value: []
                 },
+                roles : {
+                    type:roles
+                },
                 selectedLanguageTab: {
-                    type: String
+                    type: String,
+                    observer: "selectedLanguageTabChanged"
                 },
                 notification: {
                     type: Object
                 },
-                title: {
-                    type: String,
-                    value: ""
+                selectedLanguageText: {
+                    type: Object
                 },
-                text: {
+                visibleDateFrom: {
+                    type: Date,
+                    value: null
+                },
+                visibleDateTo: {
+                    type: Date,
+                    value: null
+                },
+                visibleTimeFrom: {
                     type: String,
-                    value: ""
+                    value: null
+                },
+                visibleTimeTo: {
+                    type: String,
+                    value: null
+                }
+            },
+
+            selectedLanguageTabChanged: function (newValue) {
+                if (newValue == null || newValue.length === 0) {
+                    this.selectedLanguageText = {};
+                } else {
+                    if (this.notification[newValue] == null) {
+                        this.notification[newValue] = {title: "", text: ""};
+                    }
+                    this.selectedLanguageText = this.notification[newValue];
                 }
             },
 
@@ -125,14 +183,16 @@
 
             open: function (notification) {
                 this.notification = notification;
-                this.title = notification.title;
-                this.text = notification.text;
-                this.visibleDateFrom = new Date(notification.visibleFrom);
-                this.visibleDateTo = new Date(notification.visibleTo);
-                var s = notification.visibleFrom;
+                var visibility = notification.visibility;
+                this.visibleDateFrom = new Date(visibility.visibleFrom);
+                this.visibleDateTo = new Date(visibility.visibleTo);
+                var s = visibility.visibleFrom;
                 this.visibleTimeFrom = s.substring(s.indexOf("T") + 1).substring(0, 5);
-                s = notification.visibleTo;
+                s = visibility.visibleTo;
                 this.visibleTimeTo = s.substring(s.indexOf("T") + 1).substring(0, 5);
+
+                this.selectedLanguageTab = this.supportedLanguages[0].locale;
+
                 this.$.dlg.open();
             },
 
@@ -140,6 +200,9 @@
                 this.$.dlg.close();
             },
 
+            onSave: function () {
+                this.fire("save", this.notification);
+            }
 
         });
     </script>
