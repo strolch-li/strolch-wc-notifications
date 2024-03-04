@@ -2,8 +2,8 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../paper-button/paper-button.html">
-<link rel="import" href="../strolch-wc-styles/strolch-wc-app-style.html">
 <link rel="import" href="../strolch-wc-util-behavior/strolch-wc-component-behavior.html">
+<link rel="import" href="../strolch-wc-localize-behavior/strolch-wc-localize-behavior.html">
 <link rel="import" href="../strolch-wc-raw-text/strolch-wc-raw-text.html">
 
 <link rel="import" href="./strolch-wc-notifications-behavior.html">
@@ -12,7 +12,7 @@
 <dom-module id="strolch-wc-notification-detail">
     <template>
         <!-- Style -->
-        <style is="custom-style" include="strolch-wc-app-style">
+        <style is="custom-style">
             :host {
 
             }
@@ -42,11 +42,14 @@
 
             <!-- Behaviors -->
             behaviors: [
-                StrolchNotificationsBehavior
+                StrolchLocalizeBehavior, StrolchNotificationsBehavior
             ],
 
             <!-- Properties -->
             properties: {
+                localesPath: {
+                    type: String
+                },
                 notification: {
                     type: Object
                 }
