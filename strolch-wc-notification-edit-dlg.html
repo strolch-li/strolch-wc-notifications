@@ -83,7 +83,7 @@
         </style>
 
         <!-- Content -->
-        <paper-dialog id="dlg" modal on-iron-overlay-closed="close">
+        <paper-dialog id="dlg" modal>
             <iron-a11y-keys keys="esc" on-keys-pressed="close"></iron-a11y-keys>
             <div class="dialog-headline">
                 <h2>
@@ -131,18 +131,19 @@
                     </template>
                 </div>
 
-
                 <div class="visibility">
                     <strolch-wc-date-picker class="inline-blk" id="startDate" label="[[localize('visibleFrom')]]"
                                             value="{{visibleDateFrom}}"></strolch-wc-date-picker>
-                    <strolch-wc-editable-time-picker class="inline-blk" id="startTime" label="[[localize('time')]]"
+                    <strolch-wc-editable-time-picker id="timeFrom" class="inline-blk" id="startTime"
+                                                     label="[[localize('time')]]"
                                                      increments="30"
                                                      value="{{visibleTimeFrom}}"></strolch-wc-editable-time-picker>
                 </div>
                 <div>
                     <strolch-wc-date-picker class="inline-blk" id="endDate" label="[[localize('visibleTo')]]"
                                             value="{{visibleDateTo}}"></strolch-wc-date-picker>
-                    <strolch-wc-editable-time-picker class="inline-blk" id="endTime" label="[[localize('time')]]"
+                    <strolch-wc-editable-time-picker id="timeTo" class="inline-blk" id="endTime"
+                                                     label="[[localize('time')]]"
                                                      increments="30"
                                                      value="{{visibleTimeTo}}"></strolch-wc-editable-time-picker>
                 </div>
@@ -234,7 +235,23 @@
             <!-- Functions -->
 
             open: function (notification) {
-                notification = JSON.parse(JSON.stringify(notification));
+                if (notification != null) {
+                    notification = JSON.parse(JSON.stringify(notification));
+                } else {
+                    var date = new Date();
+                    date.setSeconds(0);
+                    date.setMilliseconds(0);
+                    date.setMinutes(0);
+                    notification = {
+                        visibility: {
+                            roles: "",
+                            locations: "",
+                            forAll: false,
+                            visibleFrom: date.toISOString(),
+                            visibleTo: date.toISOString(),
+                        }
+                    };
+                }
 
                 this.notification = notification;
                 var visibility = notification.visibility;
@@ -278,10 +295,19 @@
             },
 
             onSave: function () {
+                var from = this.$.timeFrom.getValueWithDate(this.visibleDateFrom).toISOString();
+                var to = this.$.timeTo.getValueWithDate(this.visibleDateTo).toISOString();
 
-                this.notification.visibility.roles = this.selectedRoleIndices.map(function (index) {
+                var visibility = this.notification.visibility;
+                visibility.visibleFrom = from;
+                visibility.visibleTo = to;
+
+                visibility.roles = this.selectedRoleIndices.map(function (index) {
                     return this.roles[index].name
-                }.bind(this));
+                }.bind(this)).join(", ");
+                visibility.locations = this.selectedLocationIndices.map(function (index) {
+                    return this.locations[index].id
+                }.bind(this)).join(", ");
                 this.fire("save", this.notification);
             },
 

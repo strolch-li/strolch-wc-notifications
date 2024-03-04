@@ -36,6 +36,10 @@
                 padding: 8px;
             }
 
+            .notification {
+                margin-bottom: 16px;
+            }
+
 
         </style>
 
@@ -54,9 +58,10 @@
                 <paper-icon-button on-tap="refresh" icon="refresh"></paper-icon-button>
             </div>
         </div>
+
         <div id="content" class="content">
             <template is="dom-repeat" items="[[notifications]]" as="notification">
-                <paper-card raised="1">
+                <paper-card class="notification" raised="1">
                     <template is="dom-repeat" items="[[supportedLanguages]]" as="language">
                         <h3>[[language.name]]: [[_getField('title', language.locale, notification)]]</h3>
                         <strolch-wc-raw-text
@@ -76,6 +81,12 @@
                         <dt>[[localize('locations')]]</dt>
                         <dd>[[notification.visibility.locationNames]]</dd>
                     </dl>
+                    <dl class="g-dl">
+                        <dt>[[localize('updatedBy')]]</dt>
+                        <dd>[[notification.version.updatedBy]]</dd>
+                        <dt>[[localize('updatedAt')]]</dt>
+                        <dd>[[formatDateTimeDashIfEmpty(notification.version.updated)]]</dd>
+                    </dl>
 
                     <div class="actions padding actions-right">
                         <div>
@@ -84,6 +95,9 @@
                             </paper-button>
                             <paper-button on-tap="onEditNotification" raised>
                                 [[localize('edit')]]
+                            </paper-button>
+                            <paper-button on-tap="onRemoveNotification" raised>
+                                [[localize('remove')]]
                             </paper-button>
                         </div>
                     </div>
@@ -161,7 +175,7 @@
             },
 
             onAddNotification: function (e) {
-
+                this.$.editDlg.open();
             },
             onEditNotification: function (e) {
                 this.$.editDlg.open(e.model.notification);
@@ -200,11 +214,48 @@
             onSaveNotification: function (e) {
                 var notification = e.detail;
 
-                this.$.ajax.url = this.baseRestPath + '/strolch/notifications/' + notification.id;
-                this.$.ajax.method = 'PUT';
+                this.showInfo({
+                    title: this.localize("saveNotification"),
+                    line1: this.localize("saveNotificationConfirm"),
+                    callback: function (confirmed) {
+                        if (confirmed)
+                            this._save(notification);
+                    }.bind(this)
+                });
+            },
+            _save: function (notification) {
+                if (notification.id == null) {
+                    this.$.ajax.url = this.baseRestPath + '/strolch/notifications/';
+                    this.$.ajax.method = 'POST';
+                } else {
+                    this.$.ajax.url = this.baseRestPath + '/strolch/notifications/' + notification.id;
+                    this.$.ajax.method = 'PUT';
+                }
                 this.$.ajax.body = notification;
                 this.$.ajax.onResponse = this.closeEditDlg;
                 this.$.ajax.generateRequest();
+            },
+            onRemoveNotification: function (e) {
+                var notification = e.model.notification;
+                var title = notification[this.supportedLanguages[0].locale].title;
+
+                this.showInfo({
+                    title: this.localize("removeNotification"),
+                    line1: this.localize("removeNotificationConfirm", "title", title),
+                    callback: function (confirmed) {
+                        if (!confirmed) return;
+                        console.log("Removing " + notification.id);
+                        this.$.ajax.url = this.baseRestPath + '/strolch/notifications/' + notification.id;
+                        this.$.ajax.method = "DELETE";
+                        this.$.ajax.body = null;
+                        this.$.ajax.generateRequest();
+                    }.bind(this)
+                });
+            },
+
+            onAjaxResponse: function (e) {
+                this.$.editDlg.close();
+                this.refresh();
             }
         });
     </script>
