@@ -25,7 +25,7 @@
             }
 
             paper-dialog {
-                width: 600px;
+                width: 700px;
             }
 
             .dialog-headline {
@@ -59,6 +59,27 @@
                 };
             }
 
+            paper-listbox {
+                padding-top: 0;
+                max-height: 210px;
+                overflow: auto;
+            }
+
+            .roles-locations-div {
+                display: flex;
+                flex-direction: row;
+            }
+
+            .roles-locations-div div {
+                flex-basis: 200px;
+                flex-grow: 1;
+                flex-shrink: 1;
+            }
+
+            .roles-locations-div div p {
+                margin-bottom: 0;
+            }
+
         </style>
 
         <!-- Content -->
@@ -87,13 +108,28 @@
                 </template>
 
                 <paper-checkbox checked="{{notification.visibility.forAll}}">[[localize('forAll')]]</paper-checkbox>
-                <paper-listbox id="listBox" multi on-iron-select="onListSelect" on-iron-deselect="onListDeselect">
-                    <template is="dom-repeat" items="[[roles]]" as="role">
-                        <paper-item attr-for-selected="name">
-                            <ebx-pickingitem name="[[role]]">[[role]]</ebx-pickingitem>
-                        </paper-item>
+
+                <!-- on-iron-select="onListSelect" on-iron-deselect="onListDeselect" -->
+                <div class="roles-locations-div">
+                    <div>
+                        <p><b>[[localize('roles')]]</b></p>
+                        <paper-listbox multi selected-values="{{selectedRoleIndices}}">
+                            <template is="dom-repeat" items="[[roles]]" as="role">
+                                <paper-item name="[[role.name]]">[[role.name]]</paper-item>
+                            </template>
+                        </paper-listbox>
+                    </div>
+                    <template is="dom-if" if="[[locations]]">
+                        <div>
+                            <p><b>[[localize('locations')]]</b></p>
+                            <paper-listbox multi selected-values="{{selectedLocationIndices}}">
+                                <template is="dom-repeat" items="[[locations]]" as="location">
+                                    <paper-item name="[[location.name]]">[[location.name]]</paper-item>
+                                </template>
+                            </paper-listbox>
+                        </div>
                     </template>
-                </paper-listbox>
+                </div>
 
 
                 <div class="visibility">
@@ -119,6 +155,10 @@
             </div>
         </paper-dialog>
 
+        <iron-ajax id="ajaxGetRoles" url="[[baseRestPath]]/strolch/privilege/roles"
+                   content-type="application/json" handle-as="json" method="GET"
+                   on-response="onGetRolesResponse" on-error="onRequestError"></iron-ajax>
+
     </template>
 
     <script>
@@ -137,8 +177,20 @@
                     type: Array,
                     value: []
                 },
-                roles : {
-                    type:roles
+                locations: {
+                    type: Array
+                },
+                selectedLocationIndices: {
+                    type: Array,
+                    value: []
+                },
+                roles: {
+                    type: Array,
+                    value: []
+                },
+                selectedRoleIndices: {
+                    type: Array,
+                    value: []
                 },
                 selectedLanguageTab: {
                     type: String,
@@ -182,8 +234,16 @@
             <!-- Functions -->
 
             open: function (notification) {
+                notification = JSON.parse(JSON.stringify(notification));
+
                 this.notification = notification;
                 var visibility = notification.visibility;
+                visibility.roles = visibility.roles.split(",").map(function (s) {
+                    return s.trim()
+                });
+                visibility.locations = visibility.locations.split(",").map(function (s) {
+                    return s.trim()
+                });
                 this.visibleDateFrom = new Date(visibility.visibleFrom);
                 this.visibleDateTo = new Date(visibility.visibleTo);
                 var s = visibility.visibleFrom;
@@ -191,7 +251,24 @@
                 s = visibility.visibleTo;
                 this.visibleTimeTo = s.substring(s.indexOf("T") + 1).substring(0, 5);
 
+                this.$.ajaxGetRoles.generateRequest();
+                this.selectedRoleIndices = [];
                 this.selectedLanguageTab = this.supportedLanguages[0].locale;
+
+                // find selected locations
+                var locations = this.locations;
+                var selectedLocations = this.notification.visibility.locations;
+                if (selectedLocations == null || selectedLocations.length === 0 || this.locations.length === 0) {
+                    this.selectedLocationIndices = [];
+                } else {
+                    this.selectedLocationIndices = selectedLocations.map(function (value) {
+                        return locations.findIndex(function (v) {
+                            return v.id === value
+                        });
+                    }).filter(function (value) {
+                        return value > 0
+                    });
+                }
 
                 this.$.dlg.open();
             },
@@ -201,9 +278,28 @@
             },
 
             onSave: function () {
-                this.fire("save", this.notification);
-            }
 
+                this.notification.visibility.roles = this.selectedRoleIndices.map(function (index) {
+                    return this.roles[index].name
+                }.bind(this));
+                this.fire("save", this.notification);
+            },
+
+            onGetRolesResponse: function (e) {
+                var roles = e.detail.response;
+                this.roles = roles;
+
+                // find selected roles
+                this.selectedRoleIndices = this.notification.visibility.roles.map(function (value) {
+                    return roles.findIndex(function (v) {
+                        return v.name === value
+                    });
+                }).filter(function (value) {
+                    return value > 0
+                });
+
+                this.$.dlg.notifyResize();
+            }
         });
     </script>
 </dom-module>
