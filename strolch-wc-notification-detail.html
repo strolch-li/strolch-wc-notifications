@@ -5,6 +5,7 @@
 <link rel="import" href="../strolch-wc-util-behavior/strolch-wc-component-behavior.html">
 <link rel="import" href="../strolch-wc-localize-behavior/strolch-wc-localize-behavior.html">
 <link rel="import" href="../strolch-wc-raw-text/strolch-wc-raw-text.html">
+<link rel="import" href="../strolch-wc-styles/strolch-wc-styles.html">
 
 <link rel="import" href="./strolch-wc-notifications-behavior.html">
 <link rel="import" href="./strolch-wc-notification.html">
@@ -12,7 +13,7 @@
 <dom-module id="strolch-wc-notification-detail">
     <template>
         <!-- Style -->
-        <style is="custom-style">
+        <style is="custom-style" include="strolch-wc-styles">
             :host {
 
             }
@@ -28,6 +29,14 @@
             <iron-a11y-keys keys="esc" on-keys-pressed="close"></iron-a11y-keys>
             <h2>[[notification.title]]</h2>
             <strolch-wc-raw-text text="[[notification.text]]"></strolch-wc-raw-text>
+
+            <dl class="g-dl">
+                <dt>[[localize('validFrom')]]</dt>
+                <dd>[[formatDateTimeDashIfEmpty(notification.visibleFrom)]]</dd>
+                <dt>[[localize('validTo')]]</dt>
+                <dd>[[formatDateTimeDashIfEmpty(notification.visibleTo)]]</dd>
+            </dl>
+
             <div class="buttons">
                 <paper-button dialog-confirm autofocus>[[localize('close')]]</paper-button>
             </div>
