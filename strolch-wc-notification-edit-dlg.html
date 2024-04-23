@@ -107,6 +107,7 @@
                     <p class="visibility"><i>[[localize('textWithSimpleHtmlTagsAllowed')]]</i></p>
                 </template>
 
+                <paper-checkbox checked="{{notification.visibility.enabled}}">[[localize('enabled')]]</paper-checkbox>
                 <paper-checkbox checked="{{notification.visibility.forAll}}">[[localize('forAll')]]</paper-checkbox>
 
                 <!-- on-iron-select="onListSelect" on-iron-deselect="onListDeselect" -->
@@ -246,6 +247,7 @@
                         visibility: {
                             roles: "",
                             locations: "",
+                            enabled: true,
                             forAll: false,
                             visibleFrom: date.toISOString(),
                             visibleTo: date.toISOString(),

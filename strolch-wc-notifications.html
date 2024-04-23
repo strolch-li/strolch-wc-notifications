@@ -70,6 +70,8 @@
                     </template>
 
                     <dl class="g-dl">
+                        <dt>[[localize('enabled')]]</dt>
+                        <dd>[[localizeBoolean(notification.visibility.enabled)]]</dd>
                         <dt>[[localize('validFrom')]]</dt>
                         <dd>[[formatDateTimeDashIfEmpty(notification.visibility.visibleFrom)]]</dd>
                         <dt>[[localize('validTo')]]</dt>
