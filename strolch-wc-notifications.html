@@ -2,7 +2,6 @@
 <link rel="import" href="../polymer/polymer.html">
 <link rel="import" href="../iron-ajax/iron-ajax.html">
 <link rel="import" href="../strolch-wc-styles/strolch-wc-app-style.html">
-<link rel="import" href="../strolch-wc-util-behavior/strolch-wc-component-behavior.html">
 <link rel="import" href="../strolch-wc-raw-text/strolch-wc-raw-text.html">
 <link rel="import" href="../strolch-wc-date-time/strolch-wc-date-picker.html">
 <link rel="import" href="../strolch-wc-date-time/strolch-wc-editable-time-picker.html">
@@ -10,6 +9,7 @@
 <link rel="import" href="./strolch-wc-notifications-behavior.html">
 <link rel="import" href="./strolch-wc-notification-edit-dlg.html">
 <link rel="import" href="./strolch-wc-notification-detail.html">
+<link rel="import" href="./strolch-wc-notification-card.html">
 <link rel="import" href="./strolch-wc-notification.html">
 
 <dom-module id="strolch-wc-notifications">
@@ -61,49 +61,10 @@
 
         <div id="content" class="content">
             <template is="dom-repeat" items="[[notifications]]" as="notification">
-                <paper-card class="notification" raised="1">
-                    <template is="dom-repeat" items="[[supportedLanguages]]" as="language">
-                        <h3>[[language.name]]: [[_getField('title', language.locale, notification)]]</h3>
-                        <strolch-wc-raw-text
-                                text="[[_getField('text', language.locale, notification)]]"></strolch-wc-raw-text>
-                        <hr/>
-                    </template>
-
-                    <dl class="g-dl">
-                        <dt>[[localize('enabled')]]</dt>
-                        <dd>[[localizeBoolean(notification.visibility.enabled)]]</dd>
-                        <dt>[[localize('validFrom')]]</dt>
-                        <dd>[[formatDateTimeDashIfEmpty(notification.visibility.visibleFrom)]]</dd>
-                        <dt>[[localize('validTo')]]</dt>
-                        <dd>[[formatDateTimeDashIfEmpty(notification.visibility.visibleTo)]]</dd>
-                        <dt>[[localize('forAll')]]</dt>
-                        <dd>[[localizeBoolean(notification.visibility.forAll)]]</dd>
-                        <dt>[[localize('roles')]]</dt>
-                        <dd>[[notification.visibility.roles]]</dd>
-                        <dt>[[localize('locations')]]</dt>
-                        <dd>[[notification.visibility.locationNames]]</dd>
-                    </dl>
-                    <dl class="g-dl">
-                        <dt>[[localize('updatedBy')]]</dt>
-                        <dd>[[notification.version.updatedBy]]</dd>
-                        <dt>[[localize('updatedAt')]]</dt>
-                        <dd>[[formatDateTimeDashIfEmpty(notification.version.updated)]]</dd>
-                    </dl>
-
-                    <div class="actions padding actions-right">
-                        <div>
-                            <paper-button on-tap="onTestNotification" raised>
-                                [[localize('test')]]
-                            </paper-button>
-                            <paper-button on-tap="onEditNotification" raised>
-                                [[localize('edit')]]
-                            </paper-button>
-                            <paper-button on-tap="onRemoveNotification" raised>
-                                [[localize('remove')]]
-                            </paper-button>
-                        </div>
-                    </div>
-                </paper-card>
+                <strolch-wc-notification-card supported-languages="[[supportedLanguages]]"
+                                              notification="[[notification]]" on-edit="onEditNotification"
+                                              on-remove="onRemoveNotification"
+                                              on-test="onTestNotification"></strolch-wc-notification-card>
             </template>
         </div>
 
@@ -180,15 +141,15 @@
                 this.$.editDlg.open();
             },
             onEditNotification: function (e) {
-                this.$.editDlg.open(e.model.notification);
+                this.$.editDlg.open(e.detail);
+            },
+            onTestNotification: function (e) {
+                var notification = e.detail;
+                this.$.ajaxGetNotification.url = this.baseRestPath + "/strolch/notifications/" + notification.id;
+                this.$.ajaxGetNotification.generateRequest();
             },
             showDetail: function (notification) {
                 this.$.detailDlg.open(notification);
-            },
-            onTestNotification: function (e) {
-                var notification = e.model.notification;
-                this.$.ajaxGetNotification.url = this.baseRestPath + "/strolch/notifications/" + notification.id;
-                this.$.ajaxGetNotification.generateRequest();
             },
             onGetNotificationResponse: function (e) {
                 var notification = e.detail.response.data;
@@ -238,7 +199,7 @@
                 this.$.ajax.generateRequest();
             },
             onRemoveNotification: function (e) {
-                var notification = e.model.notification;
+                var notification = e.detail;
                 var title = notification[this.supportedLanguages[0].locale].title;
 
                 this.showInfo({

@@ -87,7 +87,7 @@
             <iron-a11y-keys keys="esc" on-keys-pressed="close"></iron-a11y-keys>
             <div class="dialog-headline">
                 <h2>
-                    <paper-icon-button icon="icons:close" dialog-dismiss></paper-icon-button>
+                    <paper-icon-button icon="icons:close" on-tap="close"></paper-icon-button>
                     [[localize('notification')]]
                 </h2>
             </div>
@@ -152,7 +152,7 @@
             </paper-dialog-scrollable>
 
             <div class="buttons">
-                <paper-button dialog-dismiss>[[localize('cancel')]]</paper-button>
+                <paper-button on-tap="close">[[localize('cancel')]]</paper-button>
                 <paper-button autofocus on-tap="onSave">[[localize('save')]]</paper-button>
             </div>
         </paper-dialog>
@@ -272,6 +272,7 @@
 
                 this.$.ajaxGetRoles.generateRequest();
                 this.selectedRoleIndices = [];
+                this.selectedLanguageTab = null;
                 this.selectedLanguageTab = this.supportedLanguages[0].locale;
 
                 // find selected locations
@@ -294,6 +295,15 @@
 
             close: function () {
                 this.$.dlg.close();
+                this.notification = null;
+                this.selectedLanguageText = {};
+                this.visibleDateFrom = null;
+                this.visibleDateTo = null;
+                this.visibleTimeFrom = null;
+                this.visibleTimeTo = null;
+                this.selectedRoleIndices = [];
+                this.selectedLanguageTab = null;
+                this.selectedLocationIndices = [];
             },
 
             onSave: function () {

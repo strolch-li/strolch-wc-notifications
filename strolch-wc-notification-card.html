@@ -1,0 +1,120 @@
+<!-- Components -->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../strolch-wc-styles/strolch-wc-app-style.html">
+<link rel="import" href="../strolch-wc-raw-text/strolch-wc-raw-text.html">
+
+<link rel="import" href="./strolch-wc-notifications-behavior.html">
+
+<dom-module id="strolch-wc-notification-card">
+    <template>
+        <!-- Style -->
+        <style is="custom-style" include="strolch-wc-app-style">
+            :host {
+
+            }
+
+            paper-card {
+                padding: 8px;
+            }
+
+            .notification {
+                margin-bottom: 16px;
+            }
+
+        </style>
+
+        <!-- Content -->
+        <paper-card class="notification" raised="1">
+            <template is="dom-repeat" items="[[supportedLanguages]]" as="language">
+                <h3>[[language.name]]: [[_getField('title', language.locale, notification)]]</h3>
+                <strolch-wc-raw-text
+                        text="[[_getField('text', language.locale, notification)]]"></strolch-wc-raw-text>
+                <hr/>
+            </template>
+
+            <dl class="g-dl">
+                <dt>[[localize('enabled')]]</dt>
+                <dd>[[localize(enabled)]]</dd>
+                <dt>[[localize('validFrom')]]</dt>
+                <dd>[[formatDateTimeDashIfEmpty(notification.visibility.visibleFrom)]]</dd>
+                <dt>[[localize('validTo')]]</dt>
+                <dd>[[formatDateTimeDashIfEmpty(notification.visibility.visibleTo)]]</dd>
+                <dt>[[localize('forAll')]]</dt>
+                <dd>[[localize(forAll)]]</dd>
+                <dt>[[localize('roles')]]</dt>
+                <dd>[[notification.visibility.roles]]</dd>
+                <dt>[[localize('locations')]]</dt>
+                <dd>[[notification.visibility.locationNames]]</dd>
+            </dl>
+            <dl class="g-dl">
+                <dt>[[localize('updatedBy')]]</dt>
+                <dd>[[notification.version.updatedBy]]</dd>
+                <dt>[[localize('updatedAt')]]</dt>
+                <dd>[[formatDateTimeDashIfEmpty(notification.version.updated)]]</dd>
+            </dl>
+
+            <div class="actions padding actions-right">
+                <div>
+                    <paper-button on-tap="onTestNotification" raised>
+                        [[localize('test')]]
+                    </paper-button>
+                    <paper-button on-tap="onEditNotification" raised>
+                        [[localize('edit')]]
+                    </paper-button>
+                    <paper-button on-tap="onRemoveNotification" raised>
+                        [[localize('remove')]]
+                    </paper-button>
+                </div>
+            </div>
+        </paper-card>
+
+    </template>
+
+    <script>
+        Polymer({
+            <!-- Settings -->
+            is: "strolch-wc-notification-card",
+
+            <!-- Behaviors -->
+            behaviors: [
+                StrolchNotificationsBehavior
+            ],
+
+            <!-- Properties -->
+            properties: {
+                supportedLanguages: {
+                    type: Array
+                },
+                notification: {
+                    type: Object
+                },
+                enabled: {
+                    type: String,
+                    computed: "_computeEnabled(notification)"
+                },
+                forAll: {
+                    type: String,
+                    computed: "_computeForAll(notification)"
+                }
+            },
+
+            _computeEnabled: function (notification) {
+                return notification.visibility.enabled === true ? "true" : "false";
+            },
+            _computeForAll: function (notification) {
+                return notification.visibility.forAll === true ? "true" : "false";
+            },
+
+            <!-- Functions -->
+            onEditNotification: function (e) {
+                this.fire("edit", this.notification);
+            },
+            onRemoveNotification: function (e) {
+                this.fire("remove", this.notification);
+            },
+            onTestNotification: function (e) {
+                this.fire("test", this.notification);
+            },
+        });
+    </script>
+</dom-module>

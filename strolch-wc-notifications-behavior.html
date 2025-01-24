@@ -1,15 +1,23 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../strolch-wc-util-behavior/strolch-wc-component-behavior.html">
+
 <script>
     StrolchNotificationsBehaviorImpl = {
 
-        properties: {},
+        properties: {
+            localesPath: {
+                type: String,
+                value: "../../../locales.json"
+            }
+        },
 
         _getField: function (field, locale, notification) {
             if (notification == null || notification[locale] == null || notification[locale][field == null])
                 return "-";
             return notification[locale][field];
         },
-        localizeBoolean: function (boolean) {
-            return boolean === true ? this.localize('true') : this.localize('false');
+        parseBoolean: function (boolean) {
+            return boolean === true;
         }
 
     };
