@@ -65,6 +65,10 @@
                 overflow: auto;
             }
 
+            paper-dropdown-menu {
+                display: block;
+            }
+
             .roles-locations-div {
                 display: flex;
                 flex-direction: row;
@@ -109,6 +113,13 @@
 
                 <paper-checkbox checked="{{notification.visibility.enabled}}">[[localize('enabled')]]</paper-checkbox>
                 <paper-checkbox checked="{{notification.visibility.forAll}}">[[localize('forAll')]]</paper-checkbox>
+
+                <paper-dropdown-menu label="[[localize('type')]]">
+                    <paper-listbox class="dropdown-content" selected="{{notification.notificationType}}" attr-for-selected="name">
+                        <paper-item name="Information">[[localize('Information')]]</paper-item>
+                        <paper-item name="Notification">[[localize('Notification')]]</paper-item>
+                    </paper-listbox>
+                </paper-dropdown-menu>
 
                 <!-- on-iron-select="onListSelect" on-iron-deselect="onListDeselect" -->
                 <div class="roles-locations-div">

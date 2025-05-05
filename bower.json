@@ -1,7 +1,7 @@
 {
   "name": "strolch-wc-notifications",
   "description": "Strolch WebComponent Notifications",
-  "version": "0.4.4",
+  "version": "0.5.0",
   "authors": [
     "Robert von Burg"
   ],

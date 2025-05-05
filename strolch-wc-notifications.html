@@ -36,16 +36,12 @@
                 padding: 8px;
             }
 
-            .notification {
-                margin-bottom: 16px;
-            }
-
-
         </style>
 
         <!-- Content -->
-        <template is="dom-if" if="[[testNotification]]">
-            <strolch-wc-notification message="[[testNotification.title]]" action1="[[localize('details')]]"
+        <template is="dom-if" if="[[testNotification]]" restamp>
+            <strolch-wc-notification notification-type$="[[testNotification.notificationType]]"
+                                     message="[[testNotification.title]]" action1="[[localize('details')]]"
                                      callback1="[[testNotification.callback1]]"
                                      bind="[[testNotification.bind]]"
                                      fa-icon="[[testNotification.faIcon]]"></strolch-wc-notification>
@@ -156,6 +152,7 @@
                 notification.callback1 = function () {
                     this.showDetail(notification);
                 }.bind(this);
+                this.testNotification = null;
                 this.testNotification = notification;
                 this.async(function () {
                     this.testNotification = null;

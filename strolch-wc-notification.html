@@ -16,11 +16,21 @@
                 height: var(--app-notification-height);
                 padding: 0 32px;
                 color: white;
-                --notification-background-color: var(--paper-red-300);
+                --notification-background-color-type-information: var(--paper-light-green-800);
+                --notification-background-color-type-notification: var(--paper-deep-orange-900);
+                --notification-background-color: var(--paper-deep-orange-900);
                 background-color: var(--notification-background-color);
 
                 @apply(--layout-horizontal);
                 @apply(--layout-center);
+            }
+
+            :host[notification-type="Information"] {
+                --notification-background-color: var(--notification-background-color-type-information);
+            }
+
+            :host[notification-type="Notification"] {
+                --notification-background-color: var(--notification-background-color-type-notification);
             }
 
             .button {
