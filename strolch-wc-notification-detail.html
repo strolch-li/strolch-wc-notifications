@@ -25,7 +25,7 @@
         </style>
 
         <!-- Content -->
-        <paper-dialog id="dlg" modal on-iron-overlay-closed="close">
+        <paper-dialog id="dlg" with-backdrop no-cancel-on-outside-click on-iron-overlay-closed="close">
             <iron-a11y-keys keys="esc" on-keys-pressed="close"></iron-a11y-keys>
             <h2>[[notification.title]]</h2>
             <strolch-wc-raw-text text="[[notification.text]]"></strolch-wc-raw-text>
